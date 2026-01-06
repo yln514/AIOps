@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero">
+    <div class="container">
+        <h2>电信异常话单根因分析系统</h2>
+        <p>基于机器学习的电信话单异常检测与根因分析平台</p>
+        <a href="{{ url_for('dashboard') }}" class="btn-primary">查看仪表盘</a>
+    </div>
+</div>
+
+<div class="features">
+    <div class="container">
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h3>异常检测</h3>
+                <p>使用Isolation Forest算法检测异常话单</p>
+            </div>
+            <div class="feature-card">
+                <h3>根因分析</h3>
+                <p>分析异常话单的根本原因</p>
+            </div>
+            <div class="feature-card">
+                <h3>可视化展示</h3>
+                <p>直观展示分析结果和关键指标</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

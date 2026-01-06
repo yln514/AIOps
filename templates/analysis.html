@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}分析详情 - 电信异常话单分析系统{% endblock %}
+
+{% block content %}
+<div class="analysis-container">
+    <div class="container">
+        <h2 class="analysis-title">异常话单详细分析</h2>
+
+        <!-- 异常样本分布 -->
+        <div class="analysis-card">
+            <h3>异常样本分布</h3>
+            <div class="chart-wrapper">
+                <canvas id="anomalyDistributionChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 根因分析 -->
+        <div class="analysis-card">
+            <h3>根因分析</h3>
+            <div class="chart-wrapper">
+                <canvas id="rootCauseChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 极端异常分析 -->
+        <div class="analysis-card">
+            <h3>极端异常样本分析</h3>
+            <div class="chart-wrapper">
+                <canvas id="extremeAnomalyChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 模型对比 -->
+        <div class="analysis-card">
+            <h3>模型对比分析</h3>
+            <div class="chart-wrapper">
+                <canvas id="modelComparisonChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script>
+    // 页面加载完成后初始化分析页面图表
+    document.addEventListener('DOMContentLoaded', function() {
+        // 获取分析页面专用图表数据
+        fetch('/api/analysis_data')
+            .then(response => response.json())
+            .then(data => {
+                // 渲染异常样本分布图表
+                renderAnomalyDistributionChart(
+                    data.anomaly_distribution.labels,
+                    data.anomaly_distribution.data
+                );
+
+                // 渲染根因分析图表
+                renderRootCauseChart(
+                    data.root_cause.labels,
+                    data.root_cause.data
+                );
+
+                // 渲染极端异常分析图表
+                renderExtremeAnomalyChart(
+                    data.extreme_anomaly.labels,
+                    data.extreme_anomaly.data
+                );
+
+                // 渲染模型对比图表
+                renderModelComparisonChart(
+                    data.model_comparison.labels,
+                    data.model_comparison.rf_data,
+                    data.model_comparison.xgb_data
+                );
+            })
+            .catch(error => console.error('Error fetching analysis data:', error));
+    });
+
+    // 渲染异常样本分布图表
+    function renderAnomalyDistributionChart(labels, data) {
+        const ctx = document.getElementById('anomalyDistributionChart').getContext('2d');
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '异常数量',
+                    data: data,
+                    backgroundColor: 'rgba(245, 34, 45, 0.7)',
+                    borderColor: 'rgba(245, 34, 45, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: '异常样本分布'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: '数量'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // 渲染极端异常分析图表
+    function renderExtremeAnomalyChart(labels, data) {
+        const ctx = document.getElementById('extremeAnomalyChart').getContext('2d');
+
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: [
+                        '#5CDBD3', '#FF9C6E', '#B37FEB',
+                        '#5470C6', '#EE6666', '#9A60B4'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: '极端异常样本分析'
+                    },
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}

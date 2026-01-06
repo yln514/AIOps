@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}仪表盘 - 电信异常话单分析系统{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="container">
+        <h2>分析仪表盘</h2>
+        
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <h3>总体准确率</h3>
+                <div class="metric-value" id="accuracy-value">0%</div>
+                <div class="metric-desc">模型预测准确度</div>
+            </div>
+            <div class="metric-card">
+                <h3>精确率</h3>
+                <div class="metric-value" id="precision-value">0%</div>
+                <div class="metric-desc">异常预测精确度</div>
+            </div>
+            <div class="metric-card">
+                <h3>召回率</h3>
+                <div class="metric-value" id="recall-value">0%</div>
+                <div class="metric-desc">异常识别召回率</div>
+            </div>
+            <div class="metric-card">
+                <h3>F1分数</h3>
+                <div class="metric-value" id="f1-value">0%</div>
+                <div class="metric-desc">综合评估指标</div>
+            </div>
+        </div>
+
+        <div class="charts-container">
+            <div class="chart-card">
+                <h3>话单状态分布</h3>
+                <div class="chart-wrapper">
+                    <canvas id="billStatusChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <h3>特征重要性</h3>
+                <div class="chart-wrapper">
+                    <canvas id="featureImportanceChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <h3>每小时异常分布</h3>
+                <div class="chart-wrapper">
+                    <canvas id="hourlyAnomaliesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script>
+    // 初始化图表
+    document.addEventListener('DOMContentLoaded', function() {
+        // 获取指标数据
+        fetch('/api/metrics')
+            .then(response => response.json())
+            .then(metrics => {
+                document.getElementById('accuracy-value').textContent = metrics.accuracy + '%';
+                document.getElementById('precision-value').textContent = metrics.precision + '%';
+                document.getElementById('recall-value').textContent = metrics.recall + '%';
+                document.getElementById('f1-value').textContent = metrics.f1_score + '%';
+            })
+            .catch(error => console.error('Error fetching metrics:', error));
+
+        // 获取图表数据
+        fetch('/api/chart_data')
+            .then(response => response.json())
+            .then(data => {
+                // 话单状态分布图表
+                renderBillStatusChart(data.bill_status.labels, data.bill_status.data);
+                
+                // 特征重要性图表
+                renderFeatureImportanceChart(data.feature_importance.labels, data.feature_importance.data);
+                
+                // 每小时异常分布图表
+                renderHourlyAnomaliesChart(data.hourly_anomalies.labels, data.hourly_anomalies.data);
+            })
+            .catch(error => console.error('Error fetching chart data:', error));
+    });
+</script>
+{% endblock %}
